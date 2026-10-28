@@ -1,1 +1,308 @@
 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIPromptStudio</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: #eef2ff;
+      color: #1f2937;
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 15px auto;
+      padding: 22px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 5px 20px #00000012;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4f46e5;
+      margin-top: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 18px 0 8px;
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #4f46e5;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+    }
+
+    .secondary {
+      background: #0f766e;
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      margin-top: 18px;
+      border-radius: 10px;
+    }
+
+    .note {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <h1>🎬 AIPromptStudio</h1>
+
+    <p class="subtitle">
+      বাংলা ও English 3D Cartoon Prompt Studio
+    </p>
+
+    <label for="language">Prompt-এর ভাষা</label>
+    <select id="language">
+      <option value="bn">বাংলা</option>
+      <option value="en">English</option>
+    </select>
+
+    <label for="type">Prompt-এর ধরন</label>
+    <select id="type">
+      <option value="image">Image Prompt</option>
+      <option value="video">Video Prompt</option>
+    </select>
+
+    <label for="story">আপনার গল্প বা Scene লিখুন</label>
+    <textarea
+      id="story"
+      maxlength="1000"
+      placeholder="গল্প এখানে লিখুন..."
+    ></textarea>
+
+    <button id="makePrompt">3D Cartoon Prompt তৈরি করুন</button>
+
+    <label for="output">তৈরি হওয়া Prompt</label>
+    <textarea
+      id="output"
+      placeholder="আপনার Prompt এখানে দেখা যাবে..."
+      readonly
+    ></textarea>
+
+    <button id="copyPrompt" class="secondary">
+      Prompt কপি করুন
+    </button>
+
+    <button id="generateVideo">
+      Runway দিয়ে ভিডিও তৈরি করুন
+    </button>
+
+    <div id="status" class="status" role="status">
+      প্রথমে আপনার গল্প লিখুন।
+    </div>
+
+    <video id="video" controls hidden></video>
+
+    <a id="videoLink" hidden target="_blank" rel="noopener">
+      তৈরি হওয়া ভিডিও খুলুন
+    </a>
+
+    <p class="note">
+      নোট: Runway API দিয়ে ভিডিও তৈরি করতে ইন্টারনেট,
+      সঠিক Backend সেটআপ এবং পর্যাপ্ত API ক্রেডিট লাগতে পারে।
+      Image Prompt তৈরি ও কপি করার জন্য API দরকার নেই।
+    </p>
+  </main>
+
+  <script>
+    const language = document.getElementById("language");
+    const type = document.getElementById("type");
+    const story = document.getElementById("story");
+    const output = document.getElementById("output");
+    const status = document.getElementById("status");
+    const makePrompt = document.getElementById("makePrompt");
+    const copyPrompt = document.getElementById("copyPrompt");
+    const generateVideo = document.getElementById("generateVideo");
+    const video = document.getElementById("video");
+    const videoLink = document.getElementById("videoLink");
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    makePrompt.addEventListener("click", () => {
+      const text = story.value.trim();
+
+      if (!text) {
+        status.textContent = "আগে আপনার গল্প লিখুন।";
+        return;
+      }
+
+      const isVideo = type.value === "video";
+      const isBangla = language.value === "bn";
+
+      if (isBangla) {
+        output.value = isVideo
+          ? "3D cartoon animation, cinematic camera movement, expressive characters, natural body movement, consistent character design, detailed environment, suitable lighting. Scene: " + text
+          : "High-quality 3D cartoon illustration, detailed characters, expressive faces, colorful environment, cinematic lighting, professional composition. Scene: " + text;
+      } else {
+        output.value = isVideo
+          ? "Create a high-quality 3D cartoon animation. Cinematic camera movement, expressive characters, natural body motion, consistent character design, detailed environment, smooth animation. Scene: " + text
+          : "Create a high-quality 3D cartoon image. Detailed characters, expressive faces, vibrant colors, cinematic lighting, professional composition, detailed background. Scene: " + text;
+      }
+
+      status.textContent = "Prompt তৈরি হয়েছে। এখন কপি করতে পারেন।";
+    });
+
+    copyPrompt.addEventListener("click", async () => {
+      if (!output.value.trim()) {
+        status.textContent = "আগে Prompt তৈরি করুন।";
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(output.value);
+        status.textContent = "Prompt কপি হয়েছে!";
+      } catch {
+        output.focus();
+        output.select();
+        const copied = document.execCommand("copy");
+        status.textContent = copied
+          ? "Prompt কপি হয়েছে!"
+          : "Prompt নির্বাচন করা হয়েছে। Copy নির্বাচন করুন।";
+      }
+    });
+
+    generateVideo.addEventListener("click", async () => {
+      const promptText = output.value.trim();
+
+      if (!promptText) {
+        status.textContent = "আগে Video Prompt তৈরি করুন।";
+        return;
+      }
+
+      if (type.value !== "video") {
+        status.textContent = "আগে Prompt-এর ধরন Video Prompt নির্বাচন করুন।";
+        return;
+      }
+
+      generateVideo.disabled = true;
+      video.hidden = true;
+      videoLink.hidden = true;
+      status.textContent = "ভিডিও তৈরির অনুরোধ পাঠানো হচ্ছে...";
+
+      try {
+        const response = await fetch("/generate-video", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ promptText })
+        });
+
+        const task = await response.json();
+
+        if (!response.ok) {
+          throw new Error(task.error || "ভিডিও অনুরোধ ব্যর্থ হয়েছে।");
+        }
+
+        if (!task.taskId) {
+          throw new Error("ভিডিও Task ID পাওয়া যায়নি।");
+        }
+
+        for (let i = 0; i < 100; i++) {
+          status.textContent =
+            "ভিডিও তৈরি হচ্ছে... " + ((i + 1) * 3) + " সেকেন্ড";
+
+          await sleep(3000);
+
+          const check = await fetch(
+            "/video-status?id=" + encodeURIComponent(task.taskId)
+          );
+
+          const result = await check.json();
+
+          if (!check.ok) {
+            throw new Error(result.error || "ভিডিওর অবস্থা জানা যায়নি।");
+          }
+
+          if (result.status === "SUCCEEDED" && result.videoUrl) {
+            video.src = result.videoUrl;
+            video.hidden = false;
+
+            videoLink.href = result.videoUrl;
+            videoLink.hidden = false;
+
+            status.textContent = "ভিডিও তৈরি সম্পন্ন হয়েছে!";
+            return;
+          }
+
+          if (["FAILED", "CANCELED"].includes(result.status)) {
+            throw new Error(result.error || "ভিডিও তৈরি ব্যর্থ হয়েছে।");
+          }
+        }
+
+        status.textContent =
+          "ভিডিও তৈরিতে বেশি সময় লাগছে। পরে আবার চেষ্টা করুন।";
+
+      } catch (error) {
+        status.textContent = "সমস্যা: " + error.message;
+      } finally {
+        generateVideo.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
+
