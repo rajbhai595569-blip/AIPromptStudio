@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
-const HF_TOKEN = "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"; // আপনার আসল Hugging Face টোকেন এখানে বসাবেন
+const HF_TOKEN = process.env.HF_TOKEN;
+// আপনার আসল Hugging Face টোকেন এখানে বসাবেন
 const PUBLIC_DIR = __dirname;
 
 function sendRes(res, status, body, type = 'application/json; charset=utf-8') {
