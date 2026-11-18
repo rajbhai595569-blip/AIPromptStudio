@@ -1,1 +1,70 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Generator Studio</title>
+    <style>
+        body { background-color: #0f172a; color: #fff; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 100%; background: #1e293b; padding: 20px; border-radius: 10px; }
+        textarea { width: 100%; height: 100px; padding: 10px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: #6366f1; color: #fff; border: none; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        video { width: 100%; margin-top: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎬 AI Video Generator Studio</h2>
+        <label>ভিডিও প্রম্পট লিখুন (English এ লিখলে ভালো ফল পাবেন):</label>
+        <textarea id="prompt" placeholder="A cinematic view of a futuristic city..."></textarea>
+        <button onclick="generateVideo()">✨ রিয়েল এআই ভিডিও তৈরি করুন</button>
+        
+        <div id="result" style="display:none; margin-top: 20px;">
+            <h3>আপনার তৈরি ভিডিও:</h3>
+            <video id="videoPlayer" controls autoplay loop>
+                আপনার ব্রাউজার ভিডিও ট্যাগ সমর্থন করে না।
+            </video>
+        </div>
+    </div>
+
+    <script>
+    async function generateVideo() {
+        const promptText = document.getElementById('prompt').value;
+        const videoPlayer = document.getElementById('videoPlayer');
+        const resultDiv = document.getElementById('result');
+
+        if (!promptText.trim()) {
+            alert('দয়া করে কিছু লিখুন!');
+            return;
+        }
+
+        alert('এআই ভিডিও তৈরি হতে ১-২ মিনিট সময় লাগতে পারে, দয়া করে অপেক্ষা করুন...');
+
+        try {
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: promptText })
+            });
+
+            if (!response.ok) {
+                throw new Error('ভিডিও তৈরি করতে সমস্যা হয়েছে। টোকেন বা ব্যাকএন্ড চেক করুন।');
+            }
+
+            const videoBlob = await response.blob();
+            const videoUrl = URL.createObjectURL(videoBlob);
+
+            videoPlayer.src = videoUrl;
+            resultDiv.style.display = 'block';
+            videoPlayer.load();
+
+        } catch (error) {
+            alert('ত্রুটি: ' + error.message);
+        }
+    }
+    </script>
+</body>
+</html>
 
